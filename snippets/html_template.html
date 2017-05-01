@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>{{ .Title }}</title>
+		<link href="main.css" rel="stylesheet">
+		<script src="main.js"></script>
+	</head>
+	<body>
+		<h1> {{ .Heading }} </h1>
+		<hr>
+		<section>
+			<h3> Template </h3>
+			<select>
+				{{ range $index, $element := .Templates }}
+				<option>{{ $element }}</option>
+				{{end}}
+			</select>
+		</section>
+	</body>
+</html>

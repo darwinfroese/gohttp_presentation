@@ -1,0 +1,201 @@
+Building a Blog Site with Go
+How to use HTTP2 and the http package in Go
+17 May 2017
+
+Darwin Froese
+https://github.com/darwinfroese
+@darwinfroese
+
+* Outline
+
+- HTTP/2 and You
+
+- Your first webserver
+
+- Templating
+
+* Resources
+
+.link https://github.com/darwinfroese/cloudshout Cloudshout 
+- A simple (featureless?) blogging framework using what we've described here (in development)
+
+.link https://github.com/darwinfroese/gowt gowt
+- My personal (in development) web toolkit that I reference
+
+.link https://golang.org/pkg/net/http Package http
+- The go docs on the http package
+
+.link https://golang.org/pkg/html/template Package template
+- The go docs on the html/template package
+
+* HTTP/2
+
+* What is HTTP/2
+
+	HTTP/2 (originally named HTTP/2.0) is a major revision of the HTTP network protocol 
+	used by the World Wide Web. It was developed from the earlier experimental SPDY protocol, 
+	originally developed by Google.
+
+.caption Source: [[https://en.wikipedia.org/wiki/HTTP/2][Wikipedia]]
+
+A new version of HTTP that incorporates the now deprecated SPDY protocol
+
+* HTTP/2 Push
+
+- _Push_ is the HTTP/2 implementation of the SPDY protocol
+- With _Push_ we can push out files instead of waiting for the client to request them; what does this mean?
+
+- NOTE: Only available over HTTPS right now
+
+* Requesting index.html with HTTP/1
+
+.image images/http1-request.png
+
+* Requesting index.html with HTTP/2
+
+.image images/http2-request.png
+
+* So what does a push look like?
+
+.code snippets/push.go
+
+* Your First Web Server
+
+* Outline
+
+"Building a webserver, that sounds like a lot of work!"
+
+.caption Source: _Somebody_
+
+Go makes it easy and includes all the stuff you need in the base language.
+
+* What do we need to create a webserver
+
+- *mux* - Multiplexer to store our routes and route handlers
+- *handlers* - Handle HTTP requests and respond
+
+* What packages are we going to need
+
+- *net/http* - Everything is included in the base language packages
+
+If you want to add more features like session management, authentication, etc. you may need more packages - however, it's all doable (and recommended) without any extra packages.
+
+* Starting from the top down
+
+.code snippets/serve.go
+
+* Multiplexer
+
+- Register routes
+- Handles traffic direction
+
+Signature:
+
+.code snippets/mux.go
+
+- As long as you satisfy this signature, you can use it in place of the default ServeMux
+
+* Example
+
+.code snippets/gowt_mux.go
+
+.caption Source: [[https://github.com/darwinfroese/gowt/blob/master/mux/mux.go][gowt/mux.go]]
+
+* Routes
+
+- ServeHTTP is the only function you _need_ but you probably want a way to register routes
+- The net/http ServeMux has _handle_
+
+* net/http ServeMux Handle
+
+.code snippets/handle.go
+
+.caption Source: [[https://golang.org/src/net/http/server.go?s=66820:66880#L2233][net/http/server.go]]
+
+* What does our server look like now?
+
+.code -numbers snippets/serve_with_mux.go
+
+* Handlers
+
+- Handlers are the bulk of your webserver
+- Signature:
+
+.code snippets/request_handler.go
+
+This looks familiar!
+
+* Handler vs Multiplexer
+
+.code snippets/request_handler.go
+.caption Request Handler
+
+.code snippets/mux.go
+.caption Multiplexer
+
+Handlers and Multiplexers are pretty interchangeable, but what if you want more than one handler?
+
+* HandlerFunc
+
+Go has a type specifically for handlers:
+
+.image images/handlerfunc.png
+
+* So what does a HandlerFunc look like
+
+.code snippets/handlerfunc.go
+
+* Wrap-Up Server
+
+- Servers are really easy to write!
+- Go is REALLY powerful: here's context routing using only the base packages!
+
+* context routing
+
+.code snippets/context_router.go
+
+* 
+
+.code snippets/tag_handler.go
+
+* Templating
+
+* What is Templating
+
+- Server side rendering of files
+- Let's you inject data from Go into files
+
+* Template syntax
+
+.code snippets/html_template.html
+
+* Template execution
+
+- So we have a file, now we need a struct to satisfy the variables
+
+.code snippets/template.go /type admin struct/,/}/ HLtype
+
+- and a render function:
+
+.code snippets/template.go /RenderAdmin/,/end/
+
+* What do we get
+
+- We get the following HTML out
+
+.code snippets/templated_html.html
+
+* Wrap-up Templating
+
+- Templating can be done on any file type, not just HTML
+- Template has some pretty powerful actions:
+
+- {{ if XXX }} true {{else}} false {{end}} - if/else statements
+- {{template "name"}} - nested templating
+- {{ printf "%q" "output" }} - function calls
+- So much more... [[https://golang.org/pkg/text/template/][text/template package]]
+
+* Presentation Wrap Up
+
+- Web servers aren't that hard to write
+- Let Go take you to the cloud(s)
