@@ -28,6 +28,8 @@ https://github.com/darwinfroese
 .link https://golang.org/pkg/html/template Package template
 - The go docs on the html/template package
 
+: There's text/template and html/template -- html and text are the same but html makes sure that the output is HTML safe against code injection
+
 * HTTP/2
 
 * What is HTTP/2
@@ -47,6 +49,8 @@ A new version of HTTP that incorporates the now deprecated SPDY protocol
 
 - NOTE: Only available over HTTPS right now
 
+: Chrome is Good, Firefox is good, Edge is good, IE is good on Windows 10, Safari is good 10.11+, Opera is Good, mobile is good
+
 * Requesting index.html with HTTP/1
 
 .image images/http1-request.png
@@ -59,13 +63,25 @@ A new version of HTTP that incorporates the now deprecated SPDY protocol
 
 .code snippets/push.go
 
+: *.Push takes in "endpoint" and "options" -- nil is default options
+: Options are: Method "GET" or "HEAD" and "pseudo header fields" -- default is FINE
+
+* What can I push out?
+
+- HTML Files
+- Javascript files
+- CSS Files
+- JSON data
+
+: You push using an endpoint - anything your endpoint can do you can push
+
 * Your First Web Server
 
 * Outline
 
 "Building a webserver, that sounds like a lot of work!"
 
-.caption Source: _Somebody_
+.caption Source: _Somebody_, _Probably_
 
 Go makes it easy and includes all the stuff you need in the base language.
 
@@ -78,11 +94,13 @@ Go makes it easy and includes all the stuff you need in the base language.
 
 - *net/http* - Everything is included in the base language packages
 
-If you want to add more features like session management, authentication, etc. you may need more packages - however, it's all doable (and recommended) without any extra packages.
+If you want to add more features like session management, authentication, etc. you may need more packages - however, it's all doable (and I recommend) without any extra packages.
 
 * Starting from the top down
 
 .code snippets/serve.go
+
+: log.Fatal outputs the response from the http.ListenAndServe call (an error)
 
 * Multiplexer
 
@@ -179,6 +197,8 @@ Go has a type specifically for handlers:
 
 .code snippets/template.go /RenderAdmin/,/end/
 
+: don't need to have .html extension -- can have any file extension, even our own file type, syntax, etc.
+
 * What do we get
 
 - We get the following HTML out
@@ -187,7 +207,7 @@ Go has a type specifically for handlers:
 
 * Wrap-up Templating
 
-- Templating can be done on any file type, not just HTML
+- Templating can be done on any file type, not just HTML -- text, css, javascript, etc.
 - Template has some pretty powerful actions:
 
 - {{ if XXX }} true {{else}} false {{end}} - if/else statements
