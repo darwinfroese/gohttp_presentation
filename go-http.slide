@@ -205,6 +205,26 @@ Go has a type specifically for handlers:
 
 .code snippets/templated_html.html
 
+* Nesting Templates
+
+- Now that we've seen how powerful templates can be - can we combine them?
+- Yes, we can!
+
+.code snippets/base_template.html
+.caption A base template
+
+* and our child template
+
+.code snippets/child_template.html
+.caption Our child template
+
+- And then we just modify our TemplateFiles call to use both files
+
+.code snippets/multi_file_template.go
+.caption Our new template call
+
+: This is really useful if you want to have things like themes!
+
 * Wrap-up Templating
 
 - Templating can be done on any file type, not just HTML -- text, css, javascript, etc.
@@ -214,6 +234,9 @@ Go has a type specifically for handlers:
 - {{template "name"}} - nested templating
 - {{ printf "%q" "output" }} - function calls
 - So much more... [[https://golang.org/pkg/text/template/][text/template package]]
+
+: text/template is the base package - html/template uses text/template
+: html/template makes sure the templating is HTML safe
 
 * Presentation Wrap Up
 
