@@ -19,9 +19,6 @@ https://github.com/darwinfroese
 .link https://github.com/darwinfroese/cloudshout Cloudshout 
 - A simple (featureless?) blogging framework using what we've described here (in development)
 
-.link https://github.com/darwinfroese/gowt gowt
-- My personal (in development) web toolkit that I reference
-
 .link https://golang.org/pkg/net/http Package http
 - The go docs on the http package
 
@@ -63,6 +60,9 @@ A new version of HTTP that incorporates the now deprecated SPDY protocol
 
 .code snippets/push.go
 
+- cast our ResponseWriter to a http.Pusher type
+- Push our endpoint
+
 : *.Push takes in "endpoint" and "options" -- nil is default options
 : Options are: Method "GET" or "HEAD" and "pseudo header fields" -- default is FINE
 
@@ -72,6 +72,8 @@ A new version of HTTP that incorporates the now deprecated SPDY protocol
 - Javascript files
 - CSS Files
 - JSON data
+
+Your pushing an endpoint, not a file from your file system
 
 : You push using an endpoint - anything your endpoint can do you can push
 
@@ -85,39 +87,33 @@ A new version of HTTP that incorporates the now deprecated SPDY protocol
 
 Go makes it easy and includes all the stuff you need in the base language.
 
-* What do we need to create a webserver
+* Webserver primer
 
 - *mux* - Multiplexer to store our routes and route handlers
 - *handlers* - Handle HTTP requests and respond
-
-* What packages are we going to need
-
-- *net/http* - Everything is included in the base language packages
-
-If you want to add more features like session management, authentication, etc. you may need more packages - however, it's all doable (and I recommend) without any extra packages.
-
-* Starting from the top down
-
-.code snippets/serve.go
-
-: log.Fatal outputs the response from the http.ListenAndServe call (an error)
+- *http.ResponseWriter* - An interface for responding over HTTP
+- *http.Request* - A struct with request information provided with an incoming request
 
 * Multiplexer
 
-- Register routes
-- Handles traffic direction
+- Register your server routes
+- Directs requests to the appropriate handler
 
-Signature:
+Interface:
 
 .code snippets/mux.go
 
-- As long as you satisfy this signature, you can use it in place of the default ServeMux
+- As long as you satisfy this interface, you can use it in place of the default ServeMux
+
+: The http package has a default serveMux that you can add handlers to if you don't want to create your own/your own instance
 
 * Example
 
 .code snippets/gowt_mux.go
 
 .caption Source: [[https://github.com/darwinfroese/gowt/blob/master/mux/mux.go][gowt/mux.go]]
+
+: All we are doing here is taking the request path and calling the handler that matches or returning 404 
 
 * Routes
 
@@ -130,14 +126,19 @@ Signature:
 
 .caption Source: [[https://golang.org/src/net/http/server.go?s=66820:66880#L2233][net/http/server.go]]
 
+: Here the package sets up a bunch of "ease of life" things for the route and then stores the handler in a 
+: dictionary with the pattern as the key
+
 * What does our server look like now?
 
 .code -numbers snippets/serve_with_mux.go
 
+: create a mux, register our handlers, start the server
+
 * Handlers
 
-- Handlers are the bulk of your webserver
-- Signature:
+- Handlers are the bulk of your webserver (business logic, interacting with other servers/code, etc.)
+- Interface:
 
 .code snippets/request_handler.go
 
@@ -151,7 +152,10 @@ This looks familiar!
 .code snippets/mux.go
 .caption Multiplexer
 
-Handlers and Multiplexers are pretty interchangeable, but what if you want more than one handler?
+Handlers and Multiplexers are pretty interchangeable - you could write one handler and have it be the entirety of your
+webserver, but what if you want more than one handler?
+
+: Right now we can register one handler per object/struct - what if we don't want to have one struct for each handler
 
 * HandlerFunc
 
@@ -159,22 +163,36 @@ Go has a type specifically for handlers:
 
 .image images/handlerfunc.png
 
-* So what does a HandlerFunc look like
+As long as your function looks like that you can use it as a HandlerFunc
+
+* So what can a HandlerFunc look like
 
 .code snippets/handlerfunc.go
 
-* Wrap-Up Server
 
-- Servers are really easy to write!
-- Go is REALLY powerful: here's context routing using only the base packages!
-
-* context routing
+* Advanced Handlers
 
 .code snippets/context_router.go
+
+: EnvHandler wraps an environment configuration around our HandlerFunc - this is the base of what we want to do
+: ContextRouter is using the base Handler interface we saw before, containing all the information we need
+: Adapters are middleware for stuff we want to do with every handler - Method restriction, logging, auth, etc.
+: ServeHTTP is used to make ContextRouter satisfy the handler interface
+: Map - add an entry to the mux for each pattern with a new instance of ContextRouter
+: tagHandler - the logic part -- creates a HandlerFunc that is returned
+: we have to call tagHandler to get the function and then call the returned function
 
 * 
 
 .code snippets/tag_handler.go
+
+* Running our server
+
+.code snippets/serve.go
+
+- port number, certificate info for SSL, multiplexer -- nil lets you use the default ServeMux in the http package
+
+: log.Fatal outputs the response from the http.ListenAndServe call (an error)
 
 * Templating
 
@@ -198,6 +216,7 @@ Go has a type specifically for handlers:
 .code snippets/template.go /RenderAdmin/,/end/
 
 : don't need to have .html extension -- can have any file extension, even our own file type, syntax, etc.
+: When the template is executed, anything extra in the file or the struct will be ignored
 
 * What do we get
 
@@ -235,10 +254,8 @@ Go has a type specifically for handlers:
 - {{ printf "%q" "output" }} - function calls
 - So much more... [[https://golang.org/pkg/text/template/][text/template package]]
 
-: text/template is the base package - html/template uses text/template
-: html/template makes sure the templating is HTML safe
+* Combining all three
 
-* Presentation Wrap Up
+An example of all three combined into one application: 
 
-- Web servers aren't that hard to write
-- Let Go take you to the cloud(s)
+.link https://github.com/darwinfroese/cloudshout Cloudshout
